@@ -1,0 +1,122 @@
+---------------
+---------------
+
+## 2019-01-27
+## V. Martens
+
+## Vocabularies combined 
+## 1) ULAN (Union List of Artist Names) + AAT (Art & Architecture Thesaurus)
+## 2) ULAN (Union List of Artist Names) + TGN (hesaurus of Geographic Names)
+
+---------------
+---------------
+
+## 65 people active in switzerland (7011731) between 1800-2000
+## no gotfried semper not being mentioned as active in Switzerland --> https://www.getty.edu/vow/ULANFullDisplay?find=semper&role=&nation=&prev_page=1&subjectid=500031906
+## ?id ?name ?bio ?birth ?death 
+SELECT ?id ?name ?bio ?birth ?death {
+{SELECT DISTINCT ?id
+         {?id foaf:focus/bio:event/(schema:location|(schema:location/gvp:broaderExtended)) tgn:7011731-place}}
+OPTIONAL { ?id gvp:prefLabelGVP/xl:literalForm ?name;
+          foaf:focus/gvp:biographyPreferred [
+          schema:description ?bio;
+          gvp:estStart ?birth] . }
+OPTIONAL { ?id gvp:prefLabelGVP/xl:literalForm ?name;
+          foaf:focus/gvp:biographyPreferred [
+          schema:description ?bio;
+          gvp:estEnd ?death] . }
+FILTER ("1800"^^xsd:gYear <= ?birth && ?birth <= "2000"^^xsd:gYear)}
+
+---------------
+
+## 14.906 architects in aat:300024987 born between 1900 and 2000
+## ?id ?name ?bio ?birth ?death ? ?nationality
+SELECT * { ?id a gvp:PersonConcept;
+          gvp:prefLabelGVP/xl:literalForm ?name;
+          gvp:agentTypePreferred|(gvp:agentTypePreferred/gvp:broaderGenericExtended) aat:300024987;
+          foaf:focus/gvp:biographyPreferred [
+          schema:description ?bio;
+          gvp:estStart ?birth] . 
+OPTIONAL { ?id gvp:prefLabelGVP/xl:literalForm ?name;
+         foaf:focus/gvp:biographyPreferred [
+         schema:description ?bio;
+         gvp:estEnd ?death] . }
+OPTIONAL { ?id foaf:focus [gvp:nationalityPreferred [gvp:prefLabelGVP [xl:literalForm ?nationality]]]. }
+FILTER ("1900"^^xsd:gYear < ?birth && ?birth <= "2000"^^xsd:gYear)}
+
+---------------
+
+## 14.905 architects in aat:300024987 born between 1900 and 2000
+## facet on language tag english
+## ?id ?name ?bio ?birth ?death ? ?nationality
+SELECT * { ?id a gvp:PersonConcept;
+          gvp:prefLabelGVP/xl:literalForm ?name;
+          gvp:agentTypePreferred|(gvp:agentTypePreferred/gvp:broaderGenericExtended) aat:300024987;
+          foaf:focus/gvp:biographyPreferred [
+          schema:description ?bio;
+          gvp:estStart ?birth] . 
+OPTIONAL { ?id gvp:prefLabelGVP/xl:literalForm ?name;
+          foaf:focus/gvp:biographyPreferred [
+          schema:description ?bio;
+          gvp:estEnd ?death] . }
+OPTIONAL { ?id foaf:focus [gvp:nationalityPreferred [gvp:prefLabelGVP [xl:literalForm ?nationality]]]. }
+FILTER ("1900"^^xsd:gYear < ?birth && ?birth <= "2000"^^xsd:gYear)
+FILTER (LANG(?nationality) = 'en')}
+
+---------------
+
+## 519 Swiss architects in aat:300024987 born between 1900 and 2000
+## FILTERed out with regex on ?nationality
+## ?id ?name ?bio ?birth ?death ? ?nationality
+SELECT * { ?id a gvp:PersonConcept;
+          gvp:prefLabelGVP/xl:literalForm ?name;
+          gvp:agentTypePreferred|(gvp:agentTypePreferred/gvp:broaderGenericExtended) aat:300024987;
+          foaf:focus/gvp:biographyPreferred [
+          schema:description ?bio;
+          gvp:estStart ?birth] . 
+OPTIONAL { ?id gvp:prefLabelGVP/xl:literalForm ?name;
+          foaf:focus/gvp:biographyPreferred [
+          schema:description ?bio;
+          gvp:estEnd ?death] . }
+OPTIONAL { ?id foaf:focus [gvp:nationalityPreferred [gvp:prefLabelGVP [xl:literalForm ?nationality]]]. }
+FILTER ("1900"^^xsd:gYear < ?birth && ?birth <= "2000"^^xsd:gYear)
+FILTER regex(STR(?nationality), 'Swiss')}
+
+---------------
+
+## 520 Swiss architects in aat:300024987 born between 1900 and 2000
+## FILTERed out with regex on ?bio 
+## ?id ?name ?bio ?birth ?death ? ?nationality
+SELECT * { ?id a gvp:PersonConcept;
+          gvp:prefLabelGVP/xl:literalForm ?name;
+          gvp:agentTypePreferred|(gvp:agentTypePreferred/gvp:broaderGenericExtended) aat:300024987;
+          foaf:focus/gvp:biographyPreferred [
+          schema:description ?bio;
+          gvp:estStart ?birth] . 
+OPTIONAL { ?id gvp:prefLabelGVP/xl:literalForm ?name;
+          foaf:focus/gvp:biographyPreferred [
+          schema:description ?bio;
+          gvp:estEnd ?death] . }
+OPTIONAL { ?id foaf:focus [gvp:nationalityPreferred [gvp:prefLabelGVP [xl:literalForm ?nationality]]]. }
+FILTER ("1900"^^xsd:gYear < ?birth && ?birth <= "2000"^^xsd:gYear)
+FILTER regex(STR(?bio), 'Swiss')}
+
+---------------
+
+## 553 Swiss architects born between 1900 and 2000
+## FILTERed out with regex on ?bio 
+## ?id ?name ?bio ?birth ?death ? ?nationality
+SELECT * { ?id a gvp:PersonConcept;
+          gvp:prefLabelGVP/xl:literalForm ?name;
+          foaf:focus/gvp:biographyPreferred [
+          schema:description ?bio;
+          gvp:estStart ?birth] . 
+OPTIONAL { ?id gvp:prefLabelGVP/xl:literalForm ?name;
+          foaf:focus/gvp:biographyPreferred [
+          schema:description ?bio;
+          gvp:estEnd ?death] . }
+OPTIONAL { ?id foaf:focus [gvp:nationalityPreferred [gvp:prefLabelGVP [xl:literalForm ?nationality]]]. }
+FILTER ("1900"^^xsd:gYear < ?birth && ?birth <= "2000"^^xsd:gYear)
+FILTER regex(STR(?bio), 'Swiss architect')}
+
+---------------

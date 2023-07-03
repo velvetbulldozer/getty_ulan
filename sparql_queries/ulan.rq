@@ -1,0 +1,1026 @@
+---------------
+1. INTRODUCTION
+---------------
+
+## 2015-02-04
+## V. Martens
+
+## Getty Vocabs
+## 1) ULAN (UNION List of Artist Names)
+## http://vocab.getty.edu/doc/#ULAN_URLs
+
+---------------
+2. TOP LEVELS ULAN AND AAT
+---------------
+
+## QUERIES to get to top levels of ULAN and AAT
+## AAT & #ULAN combined
+
+## ?idULAN ?idAAT
+SELECT * 
+{ 
+?idULAN skos:inScheme ulan: . 
+?idAAT gvp:parentString ?parentString . 
+} 
+
+## ID ULAN
+## ?idULAN 
+SELECT * 
+{
+?idULAN skos:inScheme ulan: . 
+}
+
+## Top level ULAN
+## ?id ?parentString
+SELECT * 
+{
+?id a gvp:Facet; skos:inScheme ulan: ; 
+      gvp:prefLabelGVP/xl:literalForm ?parentString . 
+}
+
+## id no and pref_name for artists/persons (ulan:500000002) Limited to 50 results
+## ?id ?name
+SELECT ?id ?name
+{
+ulan:500000002 skos:member ?id .
+?id gvp:prefLabelGVP/xl:literalForm ?name . 
+}
+LIMIT 50
+
+## all persons and people (ulan:500000002) with id and name
+## ?id ?name
+SELECT * 
+{
+<http://vocab.getty.edu/ulan/500000002> skos:member ?id . 
+?id gvp:prefLabelGVP/xl:literalForm ?name . 
+}
+
+---------------
+3. DOESN'T WORK
+---------------
+
+---------------
+3.1 DOES WORK DUE TO ULAN SERVER PROBLEMS
+---------------
+
+## for scopenote SARI; rembrandt, url, scopenote
+## check brackets end
+PREFIX gvp: <http://vocab.getty.edu/ontology#>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX skosxl: <http://www.w3.org/2008/05/skos-xl#>
+PREFIX ulan: <http://vocab.getty.edu/scopeNote>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+SELECT ?double 
+WHERE { SERVICE <http://vocab.getty.edu/sparql> 
+{
+<http://vocab.getty.edu/ulan/500011051> gvp:prefLabelGVP/xl:literalForm ?name ;
+dc:identifier ?id ;
+skos:scopeNote ?w .
+?w rdf:value ?ScopeNote .
+{BIND(?id AS ?double)} 
+UNION {BIND(CONCAT(", ",(STRAFTER(STR(?name),"" ))) AS ?double )}
+UNION {BIND(CONCAT(", ",(STRAFTER(STR(?ScopeNote),"" ))) AS ?double )}}
+}
+
+---------------
+
+## for related SARI, needs extra binding to work on SARI platform
+## check brackets at end
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX sesame: <http://www.openrdf.org/schema/sesame#>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX gvp: <http://vocab.getty.edu/ontology#>
+#PREFIX skosxl: <http://www.w3.org/2008/05/skos-xl#>
+#PREFIX ulan: <http://vocab.getty.edu/scopeNote>
+#PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+SELECT ?subject ?relationtype2 ?name ?id ?gettyWebsite 
+WHERE { SERVICE <http://vocab.getty.edu/sparql> 
+{ <http://vocab.getty.edu/ulan/500011051> skos:prefLabel ?subject .
+<http://vocab.getty.edu/ulan/500011051> ?relation ?id .
+?relation sesame:directSubPropertyOf skos:related ;
+dc:title ?relationtype .
+?id gvp:prefLabelGVP ?oo.
+?oo gvp:term ?name .
+{BIND(CONCAT("http://vocab.getty.edu/ulan/",STRAFTER(STR(?id),"http://vocab.getty.edu/ulan/")) AS ?gettyWebsite)}
+ {BIND(CONCAT("",(STRBEFORE(STR(?relationtype ),"-" ))) AS ?relationtype2 )}}}
+
+---------------
+
+## for related SARI, needs extra binding to work on SARI platform
+## edited the PREFIXES and the ULAN uri.
+## check brackets at end
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX sesame: <http://www.openrdf.org/schema/sesame#>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX gvp: <http://vocab.getty.edu/ontology#>
+PREFIX skosxl: <http://www.w3.org/2008/05/skos-xl#>
+PREFIX ulan: <http://vocab.getty.edu/ulan/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+SELECT ?subject ?relationtype2 ?name ?id ?gettyWebsite 
+WHERE { SERVICE <http://vocab.getty.edu/sparql> 
+{ ulan:500011051 skos:prefLabel ?subject .
+ulan:500011051 ?relation ?id .
+?relation sesame:directSubPropertyOf skos:related ;
+       dc:title ?relationtype .
+?id gvp:prefLabelGVP ?oo.
+?oo gvp:term ?name .
+{BIND(CONCAT("http://vocab.getty.edu/ulan/",STRAFTER(STR(?id),"http://vocab.getty.edu/ulan/")) AS ?gettyWebsite)}
+{BIND(CONCAT("",(STRBEFORE(STR(?relationtype ),"-" ))) AS ?relationtype2 )}}}
+
+---------------
+4. GENERIC GETTY'S SPARQL ENDPOINT
+---------------
+
+## for ?id, ?name and ?parentstring 'ulan:500000002' instead of 'persons, artists'
+SELECT * 
+{
+<http://vocab.getty.edu/ulan/500000002> skos:member ?id .
+?id gvp:prefLabelGVP/xl:literalForm ?name . 
+<http://vocab.getty.edu/ulan/500004338> gvp:broaderPreferred ?parentString .
+}
+
+---------------
+
+## OPTIONAL ?ulan ?name ?birth ?death
+SELECT DISTINCT ?ulan ?name ?birth ?death 
+{
+OPTIONAL { ?ulan a gvp:PersonConcept.
+?ulan rdfs:label ?name.
+?bio gvp:estStart ?birth.
+?bio gvp:estEnd ?death.}
+}
+
+---------------
+5. ULAN - ID & GETTY REFERRER (SARI)
+---------------
+
+## 
+## 
+PREFIX gvp: <http://vocab.getty.edu/ontology#>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+SELECT DISTINCT ?x
+WHERE
+{ SERVICE <http://vocab.getty.edu/sparql>
+{
+<http://vocab.getty.edu/ulan/500011051> dc:identifier ?x . 
+}
+
+---------------
+
+## GETTY REFFERER SARI
+## creates html list of ?x in not working (Website), and working RDF Version, Getty Website and Getty human readable website - list
+<semantic-query query='
+PREFIX gvp: <http://vocab.getty.edu/ontology#>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+SELECT DISTINCT ?x
+WHERE
+{ SERVICE <http://vocab.getty.edu/sparql>
+{ 
+<http://vocab.getty.edu/ulan/500011051> dc:identifier ?x . }
+BIND(CONCAT("http://vocab.getty.edu/ulan/",STRAFTER(STR(?x),"http://vocab.getty.edu/ulan/")) as ?gettyWebsite)
+}
+' template='<ul>
+<li><a href="{{bindings.0.gettyWebsite.value}}" target="_blank">{{bindings.0.gettyWebsite.value}}</a> (Website)</li>
+<li>{{bindings.0.x.value}} (Getty ID)</li>
+<li><a href="{{bindings.0.x.value}}" target="_blank">{{bindings.0.x.value}} </a> (RDF Version)</li>
+<li><a href="http://vocab.getty.edu/ulan/{{bindings.0.x.value}}" target="_blank">{{bindings.0.x.value}} <i class="fa fa-external-link" aria-hidden="true"></a></i> (Getty website)</li>  
+<li><a href="http://vocab.getty.edu/page/ulan/{{bindings.0.x.value}}" target="_blank">{{bindings.0.x.value}} <i class="fa fa-external-link" aria-hidden="true"></a></i> (Getty human-readable website)</li>  
+</ul>'></semantic-query>
+                
+---------------
+6. ULAN - PAGENAME
+---------------
+
+## 
+## 
+PREFIX gvp: <http://vocab.getty.edu/ontology#>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+SELECT DISTINCT ?x
+WHERE
+{ SERVICE <http://vocab.getty.edu/sparql>
+{
+<http://vocab.getty.edu/ulan/500011051> dc:identifier ?x . 
+}
+BIND(CONCAT("http://vocab.getty.edu/ulan/",STRAFTER(STR(?x),"http://vocab.getty.edu/ulan/")) as ?gettyWebsite)}
+
+' template='<ul>
+<li><a href="{{bindings.0.x.value}}" target="_blank">{{bindings.0.x.value}} </a> (RDF Version)</li>
+<li><a href="http://vocab.getty.edu/ulan/{{bindings.0.x.value}}" target="_blank">{{bindings.0.x.value}} <i class="fa fa-external-link" aria-hidden="true"></a></i> (Getty website)</li>  
+<li><a href="http://vocab.getty.edu/page/ulan/{{bindings.0.x.value}}" target="_blank">{{bindings.0.x.value}} <i class="fa fa-external-link" aria-hidden="true"></a></i> (Getty human-readable website)</li>  
+</ul>'></semantic-query> 
+
+---------------
+7. ULAN - PREFNAME
+---------------
+
+## rembrandt pref spelling name
+## ?name
+PREFIX gvp: <http://vocab.getty.edu/ontology#>
+SELECT DISTINCT ?name
+WHERE
+{ SERVICE <http://vocab.getty.edu/sparql>
+{
+<http://vocab.getty.edu/ulan/500011051> skos:prefLabel ?name .}
+}
+
+---------------
+
+## ## query for ULAN prefnames altnames and comments
+## query for ?prefname ?prefcomment ?altname ?altcomment
+SELECT ?prefname ?prefcomment ?altname ?altcomment 
+{
+<http://vocab.getty.edu/ulan/500011051> xl:prefLabel ?a .
+?a gvp:term ?prefname ;
+       rdfs:comment ?prefcomment .
+<http://vocab.getty.edu/ulan/500011051> xl:altLabel ?b .
+?b gvp:term ?altname .
+?b rdfs:comment ?altcomment . 
+}
+
+---------------
+8. ULAN - BIO
+---------------
+
+## finds bio of Rembrandt
+## commented out the prefixes i don't need
+## ?bio
+PREFIX gvp: <http://vocab.getty.edu/ontology#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX schema: <http://schema.org/>
+#PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+#PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+#PREFIX ulan: <http://vocab.getty.edu/ulan/>
+SELECT DISTINCT ?bio
+WHERE
+{ SERVICE <http://vocab.getty.edu/sparql>
+{
+<http://vocab.getty.edu/ulan/500011051> foaf:focus ?a . 
+?a gvp:biographyPreferred ?b .
+?b schema:description ?bio . }
+}
+
+
+---------------
+9. ULAN - BORN
+---------------
+
+## finds birthdate of Rembrandt
+## commented out the prefixes i don't need
+## ?born
+PREFIX gvp: <http://vocab.getty.edu/ontology#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+#PREFIX schema: <http://schema.org/>
+#PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+#PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX ulan: <http://vocab.getty.edu/ulan/>
+SELECT ?born
+WHERE
+{ SERVICE <http://vocab.getty.edu/sparql>
+{
+<http://vocab.getty.edu/ulan/500011051> foaf:focus ulan:500011051-agent .
+ulan:500011051-agent gvp:biographyPreferred ?b .
+?b gvp:estStart ?born .}
+}
+
+---------------
+10. ULAN - DIED
+---------------
+
+## finds deathdate of Rembrandt
+## commented out the prefixes i don't need
+## ?death
+PREFIX gvp: <http://vocab.getty.edu/ontology#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+#PREFIX schema: <http://schema.org/>
+#PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+#PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX ulan: <http://vocab.getty.edu/ulan/>
+SELECT DISTINCT ?died
+WHERE
+{ SERVICE <http://vocab.getty.edu/sparql>
+{
+<http://vocab.getty.edu/ulan/500011051> foaf:focus ?a .
+?a gvp:biographyPreferred ?b .
+?b gvp:estEnd ?died .}
+}
+
+---------------
+11. ULAN - SCOPENOTE
+---------------
+
+## for scopenote SARI; rembrandt, url, scopenote
+## ?x ?name ?ScopeNote 
+PREFIX gvp: <http://vocab.getty.edu/ontology#>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX skosxl: <http://www.w3.org/2008/05/skos-xl#>
+PREFIX ulan: <http://vocab.getty.edu/scopeNote>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+SELECT DISTINCT ?x ?name ?ScopeNote 
+WHERE { SERVICE <http://vocab.getty.edu/sparql> 
+{
+<http://vocab.getty.edu/ulan/500011051> gvp:prefLabelGVP/xl:literalForm ?name . 
+<http://vocab.getty.edu/ulan/500011051> dc:identifier ?x . 
+<http://vocab.getty.edu/ulan/500011051> skos:scopeNote ?xx .
+?xx rdf:value ?ScopeNote . }
+}
+
+---------------
+
+## for scopenote SARI; rembrandt, url, scopenote - shortened version 
+## ?x ?name ?ScopeNote 
+PREFIX gvp: <http://vocab.getty.edu/ontology#>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX skosxl: <http://www.w3.org/2008/05/skos-xl#>
+PREFIX ulan: <http://vocab.getty.edu/scopeNote>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+SELECT DISTINCT ?x ?name ?ScopeNote 
+WHERE { SERVICE <http://vocab.getty.edu/sparql> 
+{
+<http://vocab.getty.edu/ulan/500011051> gvp:prefLabelGVP/xl:literalForm ?name ;
+       dc:identifier ?x ;
+       skos:scopeNote ?xx .
+?xx rdf:value ?ScopeNote . }
+}
+
+---------------
+12. ULAN - ALTERNATIVE NAMES
+---------------
+
+## 
+## ?prefname ?prefcontributors ?altname ?altcontributors 
+SELECT DISTINCT ?prefname ?prefcontributors ?altname ?altcontributors 
+{ 
+<http://vocab.getty.edu/ulan/500011051> xl:prefLabel ?a .
+?a gvp:term ?prefname ;
+       gvp:sourceNonPreferred ?aa . 
+<http://vocab.getty.edu/ulan/500011051> xl:altLabel ?b .
+?b gvp:term ?altname ;
+       gvp:sourceNonPreferred ?bb .
+OPTIONAL { ?aa dcterms:title ?prefcontributors . }
+OPTIONAL { ?bb dcterms:title ?altcontributors . }
+}
+
+---------------
+
+
+## finds alternate spellings of Rembrandt limited to 40
+## commented out prefix i don't need
+## ?altspelling
+#PREFIX gvp: <http://vocab.getty.edu/ontology#>
+PREFIX xl: <http://www.w3.org/2008/05/skos-xl#>
+SELECT DISTINCT ?altspelling
+WHERE
+{ SERVICE <http://vocab.getty.edu/sparql>
+{
+<http://vocab.getty.edu/ulan/500011051> xl:altLabel ?d .
+?d xl:literalForm ?altspelling . }
+}
+LIMIT 40 
+       
+---------------     
+
+## finds alternate spellings of Rembrandt  limited to 40
+## ?altspelling
+#PREFIX gvp: <http://vocab.getty.edu/ontology#>
+SELECT DISTINCT ?altspelling
+WHERE
+{ SERVICE <http://vocab.getty.edu/sparql>
+{
+<http://vocab.getty.edu/ulan/500011051> rdfs:label ?altspelling .  }
+}
+ORDER BY DESC(?altspelling)
+LIMIT 40
+
+---------------
+13. ULAN - NATIONALITIES
+---------------
+
+## 
+## commented out prefix i don't need
+## ?nationality
+PREFIX gvp: <http://vocab.getty.edu/ontology#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+#PREFIX ulan: <http://vocab.getty.edu/ulan/>
+#PREFIX aat: <http://vocab.getty.edu/aat/>
+SELECT ?nationality
+WHERE
+{ SERVICE <http://vocab.getty.edu/sparql>
+{
+<http://vocab.getty.edu/ulan/500011051> foaf:focus ?a .
+?a gvp:nationalityPreferred ?b . 
+?b skos:prefLabel ?nationality . 
+FILTER regex(STR(?nationality),"Dutch")}
+}
+
+---------------
+14. ULAN - PREFERRED ROLES & ALTERNATIVE ROLES
+---------------
+
+## finds preferred role(s) for Rembrandt 
+## ?prefrole
+PREFIX gvp: <http://vocab.getty.edu/ontology#>
+#PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+#PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX ulan: <http://vocab.getty.edu/ulan/>
+#PREFIX aat: <http://vocab.getty.edu/aat/>
+SELECT ?role
+WHERE
+{ SERVICE <http://vocab.getty.edu/sparql>
+{
+<http://vocab.getty.edu/ulan/500011051> gvp:agentTypePreferred ?x .
+x rdfs:label ?prefrole .
+FILTER (LANG(?z) = "en")
+FILTER regex(str(?z), "artist ")}
+}
+
+---------------
+
+## finds alternative roles for Rembrandt 
+## commented out prefix i don't need
+## ?altrole
+PREFIX gvp: <http://vocab.getty.edu/ontology#>
+#PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+#PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX ulan: <http://vocab.getty.edu/ulan/>
+#PREFIX aat: <http://vocab.getty.edu/aat/>
+SELECT ?altrole
+WHERE
+{ SERVICE <http://vocab.getty.edu/sparql>
+{
+<http://vocab.getty.edu/ulan/500011051> gvp:agentTypeNonPreferred ?x .
+?x rdfs:label ?altrole .
+FILTER (LANG(?altrole) = "en")}
+}
+
+---------------
+15. ULAN - GENDER
+---------------
+
+## searches for rembrandt and then english gender 
+## commented out prefix i don't need
+## ?gender
+PREFIX gvp: <http://vocab.getty.edu/ontology#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+#PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+#PREFIX ulan: <http://vocab.getty.edu/ulan/>
+#PREFIX aat: <http://vocab.getty.edu/aat/>
+PREFIX aat_term: <http://vocab.getty.edu/aat/term/>
+PREFIX schema: <http://schema.org/>
+PREFIX xl: <http://www.w3.org/2008/05/skos-xl#>
+SELECT ?gender
+WHERE
+{ SERVICE <http://vocab.getty.edu/sparql>
+{
+<http://vocab.getty.edu/ulan/500011051> foaf:focus ?a .
+?a gvp:biographyPreferred ?b .
+?b schema:gender ?bio .
+?bio xl:prefLabel aat_term:1000189559-en .
+aat_term:1000189559-en gvp:term ?gender .}
+}
+
+---------------
+
+## searches for rembrandt and then gender and filters on language tag
+## commented out prefix i don't need
+## ?gender
+PREFIX gvp: <http://vocab.getty.edu/ontology#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+#PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+#PREFIX ulan: <http://vocab.getty.edu/ulan/>
+#PREFIX aat: <http://vocab.getty.edu/aat/>
+PREFIX aat_term: <http://vocab.getty.edu/aat/term/>
+PREFIX schema: <http://schema.org/>
+PREFIX xl: <http://www.w3.org/2008/05/skos-xl#>
+SELECT ?gender
+WHERE
+{ SERVICE <http://vocab.getty.edu/sparql>
+{
+<http://vocab.getty.edu/ulan/500011051> foaf:focus ?a . 
+?a gvp:biographyPreferred ?b . 
+?b schema:gender ?bio . 
+?bio xl:prefLabel ?c .
+?c gvp:term ?gender .}
+FILTER (LANG(?gender) = "en")
+}
+
+---------------
+16. ULAN - BIRTH AND DEATH PLACES
+---------------
+
+## finds birthplace and deathplace for Rembrandt and creates URL and binds it in URL and URL2, binds it to HTML code
+## ?birthPlace ?deathPlace
+PREFIX gvp: <http://vocab.getty.edu/ontology#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX ulan: <http://vocab.getty.edu/ulan/>
+PREFIX aat: <http://vocab.getty.edu/aat/>
+PREFIX aat_term: <http://vocab.getty.edu/aat/term/>
+PREFIX schema: <http://schema.org/>
+PREFIX xl: <http://www.w3.org/2008/05/skos-xl#>
+SELECT ?url ?url2
+WHERE
+{ SERVICE <http://vocab.getty.edu/sparql>
+{ 
+<http://vocab.getty.edu/ulan/500011051> foaf:focus ?a . 
+?a gvp:biographyPreferred ?b .
+?b schema:birthPlace ?birthPlace . 
+<http://vocab.getty.edu/ulan/500011051> foaf:focus ?c .
+?c gvp:biographyPreferred ?g . 
+?d schema:deathPlace ?deathPlace . 
+BIND(CONCAT("",(STRBEFORE(STR(?birthPlace ),"-" ))) as ?url )
+BIND(CONCAT("",(STRBEFORE(STR(?deathPlace ),"-" ))) as ?url2 )}
+}' template='<ul>
+                          <li> born: <a href="{{bindings.0.url.value}}" target="_blank">{{bindings.0.url.value}} </a> (RDF Version)</li> 
+                    <li> died: <a href="{{bindings.0.url2.value}}" target="_blank">{{bindings.0.url2.value}} </a> (RDF Version)</li>                                                                  
+                                                                </ul>'></semantic-query><br> 
+
+---------------
+
+## tried to combine birth and deathplace to create a new string (as URL - website)
+SELECT ?url ?url2 
+{
+<http://vocab.getty.edu/ulan/500011051> foaf:focus ?a . 
+?a gvp:biographyPreferred ?b .
+?b schema:birthPlace ?birthPlace . 
+<http://vocab.getty.edu/ulan/500011051> foaf:focus ?c .
+?c gvp:biographyPreferred ?d . 
+?d schema:deathPlace ?deathPlace . 
+BIND(CONCAT("",(STRBEFORE(STR(?birthPlace ),"-" ))) AS ?url )
+BIND(CONCAT("",(STRBEFORE(STR(?deathPlace ),"-" ))) AS ?url2 )
+}
+
+---------------
+17. ULAN - EVENTS
+---------------
+
+## binds ?status as ?double and returns double
+## ?double
+SELECT ?double 
+{
+<http://vocab.getty.edu/ulan/500011051> foaf:focus ?a .
+?a gvp:eventPreferred ?b .
+?b rdfs:comment ?comment .
+?b dcterms:type ?c .
+?c xl:prefLabel ?d .
+?d gvp:term ?status .
+{BIND(CONCAT("",(STRAFTER(STR(?status),"" ))) AS ?double )}
+}
+
+--------------
+
+## finds tgn:7006952-place (Amsterdam) for Rembrandt 
+## ?location 
+SELECT ?location 
+{
+<http://vocab.getty.edu/ulan/500011051> foaf:focus ?a .
+?a gvp:eventPreferred ?b .
+?b schema:location ?location .
+}
+
+--------------
+
+## rembrandt: active with OPTIONAL comments
+## ?status ?comments
+SELECT ?status ?comment 
+{
+<http://vocab.getty.edu/ulan/500011051> foaf:focus ?a .
+?a gvp:eventPreferred ?b .
+?b rdfs:comment ?comment .
+OPTIONAL
+{ 
+?b dcterms:type ?c .
+?c xl:prefLabel ?d .
+?d gvp:term ?status . }
+}
+
+--------------
+
+## rembrandt: active with comments
+## ?status ?comments
+SELECT ?status ?comment 
+{ 
+<http://vocab.getty.edu/ulan/500011051> foaf:focus ?a . 
+?a gvp:eventPreferred ?b . 
+?b rdfs:comment ?commment .
+?b dcterms:type ?c .
+?c xl:prefLabel ?d .
+?d gvp:term ?status . 
+} 
+
+---------------
+
+## binds ?status ?comments as ?double and returns double
+## ?double
+SELECT ?double 
+{
+<http://vocab.getty.edu/ulan/500011051> foaf:focus ?a .
+?a gvp:eventPreferred ?b .
+?b rdfs:comment ?comment .
+?b dcterms:type ?c .
+?c xl:prefLabel ?d .
+?d gvp:term ?status .
+{BIND(?status AS ?double)} 
+UNION {BIND(CONCAT(", ",(STRAFTER(STR(?comment),"" ))) AS ?double )}
+}
+
+---------------
+
+## binds ?status ?comments ?location as ?double and returns double
+## ?double
+SELECT ?double
+{ 
+<http://vocab.getty.edu/ulan/500011051> foaf:focus ?a .
+?a gvp:eventPreferred ?b .
+?b rdfs:comment ?comment .
+?b schema:location ?location .
+?b dcterms:type ?c .
+?c xl:prefLabel ?d .
+?d gvp:term ?status .
+{BIND(?status AS ?double)} 
+UNION {BIND(CONCAT(", ",(STRAFTER(STR(?comment),"" ))) AS ?double )}
+UNION {BIND(CONCAT(", ",(STRAFTER(STR(?location),"" ))) AS ?double )}
+}
+
+---------------
+18. ULAN - RELATED PEOPLE AND CORPORATE BODIES
+---------------
+
+## 
+## 
+PREFIX gvp: <http://vocab.getty.edu/ontology#>
+PREFIX sesame: <http://www.openrdf.org/schema/sesame#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+#PREFIX skosxl: <http://www.w3.org/2008/05/skos-xl#>
+#PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+#PREFIX dc: <http://purl.org/dc/elements/1.1/> 
+SELECT DISTINCT ?relation ?x ?name   
+WHERE
+{ SERVICE <http://vocab.getty.edu/sparql>
+{ 
+<http://vocab.getty.edu/ulan/500011051> ?relation ?x .
+?relation sesame:directSubPropertyOf skos:related. 
+?x gvp:prefLabelGVP ?oo.
+?oo gvp:term ?name .    
+BIND(CONCAT("http://vocab.getty.edu/ulan/",STRAFTER(STR(?x),"http://vocab.getty.edu/ulan/")) as ?gettyWebsite)}
+}
+LIMIT 10
+'template='{{> externalDataTemplate}}' no-result-template='No related information from Getty available.'>
+         <template id="externalDataTemplate">
+           <div>
+             <ul>
+               {{#each bindings}}
+                <li>         
+                   {{name.value}} <a href="{{x.value}}" target="_blank">{{object.value}} <i class="fa fa-external-link" aria-hidden="false"></i></a>
+                </li>
+
+---------------
+
+## rembrandt relationships and comments
+SELECT * 
+{
+ulan:500011051 ?rel ?x.
+?rel sesame:directSubPropertyOf skos:related.
+?x gvp:prefLabelGVP/xl:literalForm ?name.
+?x foaf:focus/gvp:biographyPreferred/schema:description ?bio.
+OPTIONAL {
+       [rdf:subject ulan:500011051;
+       rdf:predicate ?rel;
+       rdf:object ?x;
+       rdfs:comment ?comment]}
+}
+
+---------------
+19. ULAN - ALT BIOS
+---------------
+
+## finds non preferred biography of rembrandt and looks for coontributor name and binds it AS ?double for display purposes on SARI
+## ?nonpreferredbio ?contributor
+SELECT DISTINCT ?double
+{
+<http://vocab.getty.edu/ulan/500011051> foaf:focus ?a .
+?a gvp:biographyNonPreferred ?b .
+?b schema:description ?nonpreferredbio.
+OPTIONAL {
+?b dcterms:contributor ?f .
+?f foaf:name ?contributor . }
+{BIND(?nonpreferredbio AS ?double)}
+UNION {BIND(CONCAT(", ",(STRAFTER(STR(?contributor),"" ))) AS ?double )}
+}
+
+---------------
+20. ULAN - ALT CONTRIBUTORS FOR BOIS
+---------------
+
+## 
+## ?contributor 
+SELECT DISTINCT ?contributor
+{
+<http://vocab.getty.edu/ulan/500011051> foaf:focus ?a .
+?a gvp:biographyNonPreferred ?b .
+?b dcterms:contributor ?f .
+?f foaf:name ?contributor .
+}
+
+---------------
+21. ULAN - SOURCES AND CONTRIBUTORS
+---------------
+
+## query for ULAN Sources and Contributors
+## ?prefname ?prefcontributors ?altname ?altcontributors
+## ETH - Sources and Contributors.
+SELECT DISTINCT ?prefname ?prefcontributors ?altname ?altcontributors 
+{ 
+<http://vocab.getty.edu/ulan/500011051> xl:prefLabel ?a .
+?a gvp:term ?prefname ;
+       gvp:sourceNonPreferred ?aa . 
+<http://vocab.getty.edu/ulan/500011051> xl:altLabel ?b .
+?b gvp:term ?altname ;
+       gvp:sourceNonPreferred ?bb .
+OPTIONAL { ?aa dcterms:title ?prefcontributors . }
+OPTIONAL { ?bb dcterms:title ?altcontributors . }
+}
+
+## query for ULAN pref Sources and Contributors
+## ?prefname ?prefcontributors
+SELECT DISTINCT ?prefname ?prefcontributors 
+{ 
+<http://vocab.getty.edu/ulan/500011051> xl:prefLabel ?x .
+?x gvp:term ?prefname ;
+       gvp:sourceNonPreferred ?xx . 
+OPTIONAL { ?xx dcterms:title ?prefcontributors . }
+}
+
+## query for ULAN alt Sources and Contributors
+##?altname ?altcontributors
+SELECT ?altname ?altcontributors 
+{
+<http://vocab.getty.edu/ulan/500011051> xl:altLabel ?x .
+?x gvp:term ?altname ;
+       gvp:sourceNonPreferred ?xx .
+OPTIONAL { ?xx dcterms:title ?altcontributors . }
+}
+
+---------------
+22. ULAN - SUBJECT
+---------------
+
+## not the best version yet - feb 2, 2019.
+
+## finds some subjects on ULAN profiles, not the best result
+## ?name ?subject 
+SELECT * 
+{ <http://vocab.getty.edu/ulan/500011051> dcterms:source ?name.
+OPTIONAL { ?name bibo:locator ?subject . }
+FILTER regex(str(?subject), "")
+}
+
+---------------
+23. ULAN - NOTES
+---------------
+
+## unavailable - feb 2, 2019.
+
+---------------
+24. ULAN - TYPE
+---------------
+
+## returns ?parentStrings for Rembrandt 'Persons and People'
+## ?parentString
+PREFIX gvp: <http://vocab.getty.edu/ontology#>
+SELECT DISTINCT ?parentString
+WHERE
+{ SERVICE <http://vocab.getty.edu/sparql>
+{ <http://vocab.getty.edu/ulan/500011051> gvp:parentString ?parentString . }
+}
+
+---------------
+25. APPENDIX // GETTY SPARQL NARRATIVE / PROCESS OF CREATING A SPARQL QUERY AT THE GETTY
+---------------
+
+##
+## ?p ?name ?birth ?death ?ScopeNote ?related ?rname ?rbirth ?rdeath ?relatedScopeNote
+SELECT ?p ?name ?birth ?death ?ScopeNote ?related ?rname ?rbirth ?rdeath ?relatedScopeNote
+{ ulan:500000002 skos:member ?p .
+OPTIONAL {?p gvp:prefLabelGVP/xl:literalForm ?name;
+ 	foaf:focus/gvp:biographyPreferred [
+ 	schema:description ?bio;
+ 	gvp:estStart ?birth].}
+OPTIONAL { ?p gvp:prefLabelGVP/xl:literalForm ?name;
+ 	foaf:focus/gvp:biographyPreferred [
+ 	schema:description ?bio;
+ 	gvp:estEnd ?death]. }
+OPTIONAL {?p skos:related ?related . 
+ 	?related skos:scopeNote [dct:language gvp_lang:en; 
+rdf:value ?relatedScopeNote]}
+OPTIONAL {?related gvp:prefLabelGVP/xl:literalForm ?rname;
+ 	foaf:focus/gvp:biographyPreferred [
+ 	schema:description ?bio;
+ 	gvp:estStart ?rbirth].}
+OPTIONAL { ?related gvp:prefLabelGVP/xl:literalForm ?rname;
+ 	foaf:focus/gvp:biographyPreferred [
+ 	schema:description ?bio;
+ 	gvp:estEnd ?rdeath]. }
+OPTIONAL {?p skos:scopeNote [dct:language gvp_lang:en; rdf:value ?ScopeNote]}}
+
+---------------
+
+##
+## ?p ?name ?birth ?death ?nationality ?bio
+SELECT ?p ?name ?birth ?death ?nationality ?bio 
+{ ulan:500000002 skos:member ?p .
+OPTIONAL { ?p foaf:focus [gvp:nationalityPreferred [gvp:prefLabelGVP [xl:literalForm ?nationality]]]. }
+OPTIONAL {?p gvp:prefLabelGVP/xl:literalForm ?name;
+ foaf:focus/gvp:biographyPreferred [
+ schema:description ?bio;
+ gvp:estStart ?birth].}
+OPTIONAL { ?p gvp:prefLabelGVP/xl:literalForm ?name;
+ foaf:focus/gvp:biographyPreferred [
+ schema:description ?bio;
+ gvp:estEnd ?death]. }
+FILTER ("1500"^^xsd:gYear <= ?death && ?death <= "1800"^^xsd:gYear)}
+
+---------------
+
+## 
+## ?ID ?preflabel ?altlabel ?bio ?nationality
+SELECT ?ID ?preflabel ?altlabel ?bio ?nationality
+{ ulan:500000002 skos:member ?ID .
+?ID skos:prefLabel ?preflabel .
+?ID skos:altLabel ?altlabel .
+?ID foaf:focus/gvp:biographyPreferred/schema:description ?bio .
+?ID foaf:focus [gvp:nationalityPreferred [gvp:prefLabelGVP [xl:literalForm ?nationality]]] . }
+
+---------------
+
+## 
+## ?p ?ScopeNote
+SELECT ?p ?ScopeNote
+{ ulan:500000002 skos:member ?p ;
+OPTIONAL {?p skos:scopeNote [dct:language gvp_lang:en; rdf:value ?ScopeNote]}}
+
+---------------
+
+##
+## ?p ?ScopeNote ?related
+SELECT ?p ?ScopeNote ?related
+{ ulan:500000002 skos:member ?p .
+OPTIONAL { ?p skos:related ?related .}
+OPTIONAL {?p skos:scopeNote [dct:language gvp_lang:en; rdf:value ?ScopeNote]}}
+
+---------------
+
+##
+## ?p ?ScopeNote ?related ?relatedScopeNote
+SELECT ?p ?ScopeNote ?related ?relatedScopeNote
+{ ulan:500000002 skos:member ?p .
+OPTIONAL {?p skos:related ?related . 
+?related skos:scopeNote [dct:language gvp_lang:en; rdf:value ?relatedScopeNote]}
+
+---------------
+
+##
+## ?p ?name ?birth ?death ?ScopeNote ?related ?relatedScopeNote
+SELECT ?p ?name ?birth ?death ?ScopeNote ?related ?relatedScopeNote
+{ ulan:500000002 skos:member ?p .
+ ?p gvp:prefLabelGVP/xl:literalForm ?name;
+ foaf:focus/gvp:biographyPreferred [
+ schema:description ?bio;
+ gvp:estStart ?birth].
+?p gvp:prefLabelGVP/xl:literalForm ?name;
+ foaf:focus/gvp:biographyPreferred [
+ schema:description ?bio;
+ gvp:estEnd ?death].
+OPTIONAL {?p skos:related ?related . 
+?related skos:scopeNote [dct:language gvp_lang:en; rdf:value ?relatedScopeNote]}
+OPTIONAL {?p skos:scopeNote [dct:language gvp_lang:en; rdf:value ?ScopeNote]}}
+
+---------------
+
+##
+## ?p ?name ?birth ?death ?ScopeNote ?related ?relatedScopeNote
+SELECT ?p ?name ?birth ?death ?ScopeNote ?related ?relatedScopeNote
+{ ulan:500000002 skos:member ?p .
+OPTIONAL {?p gvp:prefLabelGVP/xl:literalForm ?name;
+ foaf:focus/gvp:biographyPreferred [
+ schema:description ?bio;
+ gvp:estStart ?birth].}
+OPTIONAL { ?p gvp:prefLabelGVP/xl:literalForm ?name;
+ foaf:focus/gvp:biographyPreferred [
+ schema:description ?bio;
+ gvp:estEnd ?death]. }
+OPTIONAL {?p skos:related ?related . 
+?related skos:scopeNote [dct:language gvp_lang:en; rdf:value ?relatedScopeNote]}
+OPTIONAL {?p skos:scopeNote [dct:language gvp_lang:en; rdf:value ?ScopeNote]}}
+
+---------------
+
+##
+## ?p ?name ?birth ?death ?ScopeNote ?related ?relatedScopeNote
+SELECT ?p ?name ?birth ?death ?ScopeNote ?related ?relatedScopeNote
+{ ulan:500000002 skos:member ?p .
+OPTIONAL {?p gvp:prefLabelGVP/xl:literalForm ?name;
+ foaf:focus/gvp:biographyPreferred [
+ schema:description ?bio;
+ gvp:estStart ?birth].}
+OPTIONAL { ?p gvp:prefLabelGVP/xl:literalForm ?name;
+ foaf:focus/gvp:biographyPreferred [
+ schema:description ?bio;
+ gvp:estEnd ?death]. }
+OPTIONAL {?p skos:related ?related . 
+?related skos:scopeNote [dct:language gvp_lang:en; rdf:value ?relatedScopeNote]}
+OPTIONAL {?p skos:scopeNote [dct:language gvp_lang:en; rdf:value ?ScopeNote]}
+FILTER ("1500"^^xsd:gYear <= ?death && ?birth <= "1700"^^xsd:gYear)}
+
+---------------
+
+##
+## ?p ?name ?birth ?death ?ScopeNote ?related ?rname ?relatedScopeNote
+SELECT ?p ?name ?birth ?death ?ScopeNote ?related ?rname ?relatedScopeNote
+{ ulan:500000002 skos:member ?p .
+OPTIONAL {?p gvp:prefLabelGVP/xl:literalForm ?name;
+ foaf:focus/gvp:biographyPreferred [
+ schema:description ?bio;
+ gvp:estStart ?birth].}
+OPTIONAL { ?p gvp:prefLabelGVP/xl:literalForm ?name;
+ foaf:focus/gvp:biographyPreferred [
+ schema:description ?bio;
+ gvp:estEnd ?death]. }
+OPTIONAL {?p skos:related ?related .
+?related gvp:prefLabelGVP/xl:literalForm ?rname .
+?related skos:scopeNote [dct:language gvp_lang:en; rdf:value ?relatedScopeNote]}
+OPTIONAL {?p skos:scopeNote [dct:language gvp_lang:en; rdf:value ?ScopeNote]}
+FILTER ("1500"^^xsd:gYear <= ?birth && ?birth <= "1700"^^xsd:gYear)}
+
+---------------
+
+## Where are the scopenotes?
+## ?p ?name ?birth ?death ?ScopeNote ?related ?rbirth ?rdeath ?relatedScopeNote
+SELECT ?p ?name ?birth ?death ?ScopeNote ?related ?rbirth ?rdeath ?relatedScopeNote
+{ ulan:500000002 skos:member ?p .
+OPTIONAL {?p gvp:prefLabelGVP/xl:literalForm ?name;
+ foaf:focus/gvp:biographyPreferred [
+ schema:description ?bio;
+ gvp:estStart ?birth].}
+OPTIONAL { ?p gvp:prefLabelGVP/xl:literalForm ?name;
+ foaf:focus/gvp:biographyPreferred [
+ schema:description ?bio;
+ gvp:estEnd ?death]. }
+OPTIONAL {?p skos:related ?related . 
+?related skos:scopeNote [dct:language gvp_lang:en; rdf:value ?relatedScopeNote]}
+ OPTIONAL {?related gvp:prefLabelGVP/xl:literalForm ?name;
+ foaf:focus/gvp:biographyPreferred [
+ schema:description ?bio;
+ gvp:estStart ?rbirth].}
+OPTIONAL { ?related gvp:prefLabelGVP/xl:literalForm ?name;
+ foaf:focus/gvp:biographyPreferred [
+ schema:description ?bio;
+ gvp:estEnd ?rdeath]. }
+OPTIONAL {?p skos:scopeNote [dct:language gvp_lang:en; rdf:value ?ScopeNote]}}
+
+---------------
+
+##
+## ?p ?name ?birth ?death ?ScopeNote ?related ?rname ?rbirth ?rdeath ?relatedScopeNote
+SELECT ?p ?name ?birth ?death ?ScopeNote ?related ?rname ?rbirth ?rdeath ?relatedScopeNote
+{ ulan:500000002 skos:member ?p .
+OPTIONAL {?p gvp:prefLabelGVP/xl:literalForm ?name;
+ foaf:focus/gvp:biographyPreferred [
+ schema:description ?bio;
+ gvp:estStart ?birth].}
+OPTIONAL { ?p gvp:prefLabelGVP/xl:literalForm ?name;
+ foaf:focus/gvp:biographyPreferred [
+ schema:description ?bio;
+ gvp:estEnd ?death]. }
+OPTIONAL {?p skos:related ?related . 
+?related skos:scopeNote [dct:language gvp_lang:en; rdf:value ?relatedScopeNote]}
+OPTIONAL {?related gvp:prefLabelGVP/xl:literalForm ?rname;
+ foaf:focus/gvp:biographyPreferred [
+ schema:description ?bio;
+ gvp:estStart ?rbirth].}
+OPTIONAL { ?related gvp:prefLabelGVP/xl:literalForm ?rname;
+ foaf:focus/gvp:biographyPreferred [
+ schema:description ?bio;
+ gvp:estEnd ?rdeath]. }
+OPTIONAL {?p skos:scopeNote [dct:language gvp_lang:en; rdf:value ?ScopeNote]}}
+
+---------------
+
+##
+## ?p ?name ?birth ?death ?bio
+SELECT ?p ?name ?birth ?death ?bio
+{ ulan:500000002 skos:member ?p .
+OPTIONAL {?p gvp:prefLabelGVP/xl:literalForm ?name;
+ foaf:focus/gvp:biographyPreferred [
+ schema:description ?bio;
+ gvp:estStart ?birth].}
+OPTIONAL { ?p gvp:prefLabelGVP/xl:literalForm ?name;
+ foaf:focus/gvp:biographyPreferred [
+ schema:description ?bio;
+ gvp:estEnd ?death]. }
+FILTER ("2010"^^xsd:gYear <= ?death && ?birth <= "2300"^^xsd:gYear)}
+
+---------------
